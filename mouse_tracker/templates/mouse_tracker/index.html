@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mouse Tracker with Camera</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        #videoElement {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Mouse Tracker with Camera</h1>
+    <canvas id="mouseCanvas" width="800" height="600"></canvas>
+    <p id="coordinates">Mouse coordinates: </p>
+    <video id="videoElement" autoplay></video>
+    <canvas id="photoCanvas" style="display:none;"></canvas>
+
+    <script>
+        const canvas = document.getElementById('mouseCanvas');
+        const ctx = canvas.getContext('2d');
+        const coordinatesDisplay = document.getElementById('coordinates');
+        const video = document.getElementById('videoElement');
+        const photoCanvas = document.getElementById('photoCanvas');
+        const photoCtx = photoCanvas.getContext('2d');
+
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        // WebSocket setup
+        const socket = new WebSocket('ws://' + window.location.host + '/ws/mouse_tracker/');
+
+        socket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            console.log(data.message);
+        };
+
+        // Camera setup
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                video.srcObject = stream;
+            })
+            .catch(function(err) {
+                console.log("An error occurred: " + err);
+            });
+
+        canvas.addEventListener('mousedown', handleMouseDown);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        function handleMouseDown(e) {
+            isDrawing = true;
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+            takePhoto();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+
+            [lastX, lastY] = [e.offsetX, e.offsetY];
+
+            updateCoordinates(e.offsetX, e.offsetY);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function updateCoordinates(x, y) {
+            coordinatesDisplay.textContent = `Mouse coordinates: (${x}, ${y})`;
+
+            socket.send(JSON.stringify({
+                'x': x,
+                'y': y
+            }));
+        }
+
+        function takePhoto() {
+            photoCanvas.width = video.videoWidth;
+            photoCanvas.height = video.videoHeight;
+            photoCtx.drawImage(video, 0, 0, photoCanvas.width, photoCanvas.height);
+
+            const imageDataUrl = photoCanvas.toDataURL('image/jpeg');
+
+            socket.send(JSON.stringify({
+                'type': 'photo',
+                'image': imageDataUrl
+            }));
+        }
+
+        canvas.addEventListener('mousemove', (e) => {
+            updateCoordinates(e.offsetX, e.offsetY);
+        });
+    </script>
+</body>
+</html>
