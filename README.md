@@ -38,15 +38,15 @@
 
 5. Install dependencies:
 
-  ```pip install -r requirements.txt```
+   ```pip install -r requirements.txt```
 
 6. Apply migrations:
 
-  ```python manage.py migrate```
+   ```python manage.py migrate```
 
 7. Start the server:
 
-  ```daphne parcelhive.asgi:application```
+   ```daphne parcelhive.asgi:application```
 
 ## Testing the Application
 
