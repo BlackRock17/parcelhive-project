@@ -7,11 +7,13 @@
 1. Create a directory for the project and navigate to it:
    
      ```mkdir parcelhive_test```
+   
      ```cd parcelhive_test```
    
 2. Clone the project:
    
    ```git clone https://github.com/BlackRock17/parcelhive-project.git```
+   
    ```cd parcelhive-project```
 
 3. Create a virtual environment:
@@ -24,15 +26,15 @@
   
      ```python3 -m venv venv```
 
-5. Activate the virtual environment:
+4. Activate the virtual environment:
 
-  - Windows:
+   - Windows:
     
      ```venv\Scripts\activate```
     
-- Linux ubunto:
+   - Linux ubunto:
   
-  ```source venv/bin/activate```
+     ```source venv/bin/activate```
 
 5. Install dependencies:
 
